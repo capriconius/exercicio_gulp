@@ -2,35 +2,48 @@ const gulp = require('gulp');
 const sass = require('gulp-sass')(require('sass'));
 const sourcemaps = require('gulp-sourcemaps');
 const uglify = require('gulp-uglify');
+const imagemin = require('gulp-imagemin');
+const imageminMozjpeg = require('imagemin-mozjpeg').default; 
+const imageminPngquant = require('imagemin-pngquant').default;
 
-function comprimeJavaScript(){
-    return gulp.src('./source/scripts/*.js')
-    .pipe(uglify())
-    .pipe(gulp.dest('./build/styles'));
+
+function comprimeImagens() {
+    return gulp.src('./source/images/**/*.{jpg,jpeg,png}')
+        .pipe(imagemin([
+            imageminMozjpeg({ quality: 75, progressive: true }),
+            imageminPngquant({ quality: [0.6, 0.8] })
+        ], {
+            verbose: true
+        }))
+        .pipe(gulp.dest('./build/images'));
 }
 
-// Função para compilar SASS
+
+function comprimeJavaScript() {
+    return gulp.src('./source/scripts/*.js')
+        .pipe(uglify())
+        .pipe(gulp.dest('./build/scripts'));
+}
+
+
 function compilaSass() {
-    return gulp.src('./source/styles/main.scss') // Onde estão seus arquivos .scss
-    .pipe(sourcemaps.init())
+    return gulp.src('./source/styles/main.scss')
+        .pipe(sourcemaps.init())
         .pipe(sass({
             outputStyle: 'compressed'
-        }).on('error', sass.logError)) // Compila e trata erros
-        .pipe(sourcemaps.write('.maps'))
-        .pipe(gulp.dest('./build/styles')); // Onde salvar o CSS
+        }).on('error', sass.logError))
+        .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest('./build/styles'));
 }
 
-// Função para observar mudanças
-function watchFiles() {
-    gulp.watch('./source/styles/*.scss', compilaSass);
-}
 
-// Exporta as funções para o Gulp
-exports.default = gulp.series(compilaSass, watchFiles);
-exports.watch = watchFiles;
-gulp.task('sass', compilaSass);
-exports.watch = function () {
-    gulp.watch('./source/styles/*.scss',gulp.series(compilaSass));
-}
+exports.default = function() {
+    gulp.watch('./source/styles/**/*.scss', { ignoreInitial: false }, gulp.series(compilaSass));
+    gulp.watch('./source/scripts/*.js', { ignoreInitial: false }, gulp.series(comprimeJavaScript));
+    gulp.watch('./source/images/**/*.{jpg,jpeg,png}', { ignoreInitial: false }, gulp.series(comprimeImagens));
+};
 
-exports.javascript = comprimeJavaScript;
+
+exports.images = comprimeImagens;
+exports.comprimeJavaScript = comprimeJavaScript;
+exports.compilaSass = compilaSass;
