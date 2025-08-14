@@ -1,10 +1,11 @@
 const gulp = require('gulp');
-const sass = require('gulp-sass')(require('sass'));
+const sassCompiler = require('sass'); 
+const gulpSass = require('gulp-sass')(sassCompiler); 
 const sourcemaps = require('gulp-sourcemaps');
 const uglify = require('gulp-uglify');
 const imagemin = require('gulp-imagemin');
-const imageminMozjpeg = require('imagemin-mozjpeg').default; 
-const imageminPngquant = require('imagemin-pngquant').default;
+const imageminMozjpeg = require('imagemin-mozjpeg');
+const imageminPngquant = require('imagemin-pngquant');
 
 
 function comprimeImagens() {
@@ -25,13 +26,11 @@ function comprimeJavaScript() {
         .pipe(gulp.dest('./build/scripts'));
 }
 
-
+// 
 function compilaSass() {
     return gulp.src('./source/styles/main.scss')
         .pipe(sourcemaps.init())
-        .pipe(sass({
-            outputStyle: 'compressed'
-        }).on('error', sass.logError))
+        .pipe(gulpSass({ outputStyle: 'compressed' }).on('error', gulpSass.logError))
         .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest('./build/styles'));
 }
